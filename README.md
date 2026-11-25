@@ -1,6 +1,6 @@
 <div align="center">
 <img src="public/icon-128.png" alt="logo"/>
-<h1> Minimalist Chrome/Firefox Extension Boilerplate with<br/>React + Vite + TypeScript + TailwindCSS</h1>
+<h1> Minimalist Chrome/Firefox/Safari Extension Boilerplate with<br/>React + Vite + TypeScript + TailwindCSS</h1>
 
 <h5>
 This template repository is a side product of my Chrome Extension <a target="_blank" rel="noopener noreferrer" href="https://chrome.google.com/webstore/detail/supatabs/icbcnjlaegndjabnjbaeihnnmidbfigk">Supatabs</a>.
@@ -18,6 +18,7 @@ If you tend to have tons of tabs open, or are a OneTab user, make sure to check 
 - [Features](#features)
 - [Usage](#usage)
   - [Getting Started](#gettingStarted) 
+  - [Safari (macOS)](#safari)
   - [Customization](#customization)
   - [Publish](#publish)
 - [Tech Docs](#tech)
@@ -26,12 +27,12 @@ If you tend to have tons of tabs open, or are a OneTab user, make sure to check 
 
 
 ## Intro <a name="intro"></a>
-This boilerplate is meant to be a minimal quick start for creating chrome/firefox extensions using React, Typescript and Tailwind CSS.
+This boilerplate is meant to be a minimal quick start for creating Chrome, Firefox, and macOS Safari extensions using React, TypeScript, and Tailwind CSS.
 
 It includes all possible pages such as **new tab**, **dev panel**, **pop up**, etc., as well as corresponding manifest settings by default.
 You will likely have to customize/delete some of the pages (see docs below).
 
-You can build dist files for both Chrome and Firefox with manifest v3.
+You can build Manifest V3 extensions for Chrome and Firefox, as well as a compiled macOS Safari artifact for Apple’s web extension packager.
 
 If you are looking for a React focused way to access the local storage, I also implemented a chrome local/sync storage hook. The hook works
 well with this template. [Check it out here](https://gist.github.com/JohnBra/c81451ea7bc9e77f8021beb4f198ab96).
@@ -50,13 +51,13 @@ well with this template. [Check it out here](https://gist.github.com/JohnBra/c81
 ### Getting Started <a name="gettingStarted"></a>
 
 #### Developing and building
-This template comes with build configs for both Chrome and Firefox. Running
-`dev` or `build` commands without specifying the browser target will build
-for Chrome by default.
+This template comes with build configs for Chrome and Firefox. The `dev` command
+defaults to Chrome, while `build` creates both Chrome and Firefox production
+builds.
 
 1. Clone this repository or click "Use this template"
 2. Change `name` and `description` in `manifest.json`
-3. Run `yarn` or `npm i` (check your node version >= 16)
+3. Run `yarn` or `npm i` (use Node.js 20.19+ or 22.12+ for Vite 7)
 4. Run `yarn dev[:chrome|:firefox]`, or `npm run dev[:chrome|:firefox]`
 
 Running a `dev` command will build your extension and watch for changes in the 
@@ -65,6 +66,51 @@ source files. Changing the source files will refresh the corresponding
 
 To create an optimized production build, run `yarn build[:chrome|:firefox]`, or
 `npm run build[:chrome|:firefox]`.
+
+#### Safari (macOS) build and packaging <a name="safari"></a>
+
+Build the Safari artifact with:
+
+```sh
+yarn build:safari
+```
+
+This creates `dist_safari`, a compiled extension directory containing `manifest.json`
+and its bundled resources. Pass this directory to Apple’s packager; do not pass
+the source `manifest.json.ts` file.
+
+The extension’s module background and header-modification rules require Safari
+16.4 or later. Users must enable the extension in Safari and grant it website
+access for YouTube (and Holodex where requested) in Safari’s extension settings
+or from the toolbar permission prompt. Safari requires user-granted site access
+for `modifyHeaders` rules, in addition to the declared
+`declarativeNetRequestWithHostAccess` permission.
+
+One existing header rule uses the DNR `initiatorDomains` condition, which is not
+listed among Apple’s documented Safari DNR conditions. Safari may reject that
+rule; rule installation is handled independently, so its failure does not
+prevent other rules from being attempted or the context-menu and toolbar-action
+handlers from initializing. The exact header behavior must be verified in Safari.
+
+On macOS with Xcode installed, run the packager from the repository root (the
+flags shown are available in current Xcode versions; check `--help` if your
+installed version differs):
+
+```sh
+xcrun safari-web-extension-packager "$PWD/dist_safari" \
+  --macos-only --copy-resources --no-open --no-prompt
+```
+
+The packager creates an Xcode project. `--copy-resources` copies the extension
+files into that project, so rerun the packager or refresh the copied resources
+after rebuilding `dist_safari`. Native packaging and runtime behavior have not
+been validated as part of this repository’s build checks.
+
+Apple also provides a Safari Web Extension Packager in App Store Connect. It
+accepts the complete extension directory contents from a browser and requires
+an Apple Developer Program account and an app record; see [Apple’s packaging
+documentation](https://developer.apple.com/documentation/safariservices/packaging-a-web-extension-for-safari)
+and [App Store Connect packaging instructions](https://developer.apple.com/documentation/safariservices/packaging-and-distributing-safari-web-extensions-with-app-store-connect).
 
 #### Load your extension
 For Chrome

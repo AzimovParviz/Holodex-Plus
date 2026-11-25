@@ -1,4 +1,4 @@
-import { Tabs } from "webextension-polyfill";
+import { Tabs, tabs } from "webextension-polyfill";
 import { Options } from "@utils";
 
 const HOLODEX_URL_HOME = "https://holodex.net";
@@ -16,12 +16,12 @@ export async function openHolodexUrl(url: string, tab: Tabs.Tab, isMultiview: bo
 
   const currentTabId = tab.id;
   if (await Options.get("openHolodexInNewTab") && tab.title !== "New Tab")
-    await chrome.tabs.create({ url: holodexUrl, index: tab.index + 1 });
+    await tabs.create({ url: holodexUrl, index: tab.index + 1 });
   else if (currentTabId)
-    await chrome.tabs.update(currentTabId, { url: holodexUrl });
+    await tabs.update(currentTabId, { url: holodexUrl });
   else
     // fallback behavior
-    await chrome.tabs.create({ url: holodexUrl, index: 9999 });
+    await tabs.create({ url: holodexUrl, index: 9999 });
 }
 
 /**

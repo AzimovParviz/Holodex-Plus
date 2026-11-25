@@ -29,6 +29,7 @@
     "utils",
     "vite.config.base.ts",
     "vite.config.chrome.ts",
-    "vite.config.firefox.ts"
+    "vite.config.firefox.ts",
+    "vite.config.safari.ts"
   ],
 }

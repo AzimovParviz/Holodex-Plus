@@ -6,6 +6,7 @@ import {
   declarativeNetRequest,
   runtime,
 } from "webextension-polyfill";
+import { updateDynamicRulesSafely } from "./dynamicRules";
 
 console.log("[Holodex+] background script loaded");
 
@@ -49,11 +50,12 @@ runtime.onInstalled.addListener(() => {
     },
   ] satisfies DeclarativeNetRequest.Rule[];
 
-  // Clear existing rules and add the new rule
-  declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: [ 1, 2 ],
-    addRules: rules,
-  });
+  void updateDynamicRulesSafely(
+    typeof declarativeNetRequest?.updateDynamicRules === "function"
+      ? (details) => declarativeNetRequest.updateDynamicRules(details)
+      : undefined,
+    rules,
+  );
 });
 
 runtime.onInstalled.addListener(() => {
